@@ -3,7 +3,7 @@
 A simple Windows desktop tool from Flare Fireplaces, using black, red and lime
 green, rounded controls, and the shared Flare Tools identity.
 
-Run **Flare-Image-Compressor-Setup-2.0.0.exe**. It installs without admin rights,
+Run **Flare-Image-Compressor-Setup-2.0.1.exe**. It installs without admin rights,
 adds Image Compressor to the Flare Tools Start menu folder, and includes an
 optional desktop shortcut and Windows uninstaller. Python is included.
 
@@ -70,7 +70,7 @@ The release directory contains the installer, portable ZIP, source ZIP and
 SHA256SUMS.txt. GitHub Actions can build, test and publish these artifacts.
 For future versions, update VERSION in updater.py and AppVersion in
 installer.iss together, then change release-request.txt to request that version.
-Stable release tags use v2.0.0 format. The existing internal update repository,
+Stable release tags use v2.0.1 format. The existing internal update repository,
 kbAppDev/tinydesk-updates, retains its URL for continuity; the product is
 branded Flare Tools throughout.
 
