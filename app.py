@@ -11,6 +11,7 @@ import subprocess
 import sys
 import threading
 import time
+import tempfile
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import customtkinter as ctk
@@ -23,17 +24,23 @@ import updater
 import flare_theme as theme
 
 ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).parent))
-DATA = Path(os.environ.get('FLARE_IMAGE_DATA_DIR', Path(os.environ.get('LOCALAPPDATA', Path.home())) / 'Flare Tools' / 'Image Compressor'))
+
+
+def known_folder(identifier, fallback):
+    if sys.platform == 'win32':
+        value = ctypes.create_unicode_buffer(32768)
+        if ctypes.windll.shell32.SHGetFolderPathW(None, identifier, None, 0, value) == 0:
+            return Path(value.value)
+    return Path(fallback)
+
+
+DATA = Path(os.environ.get('FLARE_IMAGE_DATA_DIR') or
+            known_folder(28, os.environ.get('LOCALAPPDATA') or tempfile.gettempdir()) / 'Flare Tools' / 'Image Compressor')
 BG, INK, MUTED = theme.PAGE, theme.INK, theme.MUTED
 
 
 def desktop():
-    try:
-        import winreg
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders') as key:
-            return Path(os.path.expandvars(winreg.QueryValueEx(key, 'Desktop')[0]))
-    except Exception:
-        return Path.home() / 'Desktop'
+    return known_folder(16, Path(os.environ.get('USERPROFILE') or tempfile.gettempdir()) / 'Desktop')
 
 
 def load_settings():
