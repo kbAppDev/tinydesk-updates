@@ -8,7 +8,7 @@ import re
 import urllib.request
 from urllib.parse import urlparse
 
-VERSION = '2.0.0'
+VERSION = '2.0.1'
 REPOSITORY = 'kbAppDev/tinydesk-updates'
 RELEASES_URL = f'https://github.com/{REPOSITORY}/releases'
 API_URL = f'https://api.github.com/repos/{REPOSITORY}/releases/latest'
