@@ -43,11 +43,20 @@ with zipfile.ZipFile(portable, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as ar
         if path.is_file():
             archive.write(path, path.relative_to(ROOT / 'dist'))
 source = release / f'Flare-Image-Compressor-{VERSION}-source.zip'
+source_files = [
+    'app.py', 'ui.py', 'engine.py', 'presets.py', 'thumbnails.py', 'flare_theme.py', 'updater.py',
+    'selfcheck.py',
+    'build_release.py', 'make_assets.py', 'TinyDesk.spec', 'installer.iss', 'version-info.txt',
+    'requirements.txt', 'release-request.txt', '.github/workflows/release.yml',
+    '.github/scripts/verify-installer-upgrade.ps1', 'docs/image-compressor.png',
+    'README.md', 'FLARE-TOOLS-DESIGN.md', 'RELEASE-NOTES.md', 'THIRD-PARTY-NOTICES.txt',
+    'assets/FlareTools.ico', 'assets/FlareTools.png', 'assets/FlareTools.svg',
+    'tests/ui_smoke.py', 'tests/preset_workflow.py',
+]
 with zipfile.ZipFile(source, 'w', zipfile.ZIP_DEFLATED) as archive:
-    for pattern in ('*.py', '*.spec', '*.iss', '*.md', '*.txt', 'assets/*', 'tests/*.py', '.github/workflows/*.yml'):
-        for path in sorted(ROOT.glob(pattern)):
-            if path.is_file() and path.name not in {'rebrand.py'}:
-                archive.write(path, Path('Flare-Image-Compressor') / path.relative_to(ROOT))
+    paths = [ROOT / name for name in source_files] + sorted((ROOT / 'tests').glob('test_*.py'))
+    for path in paths:
+        archive.write(path, Path('Flare-Image-Compressor') / path.relative_to(ROOT))
 assets = [release / f'Flare-Image-Compressor-Setup-{VERSION}.exe', portable, source]
 (release / 'SHA256SUMS.txt').write_text(''.join(hashlib.sha256(path.read_bytes()).hexdigest() + '  ' + path.name + '\n' for path in assets), 'utf-8')
 print(json.dumps([{'path': str(path), 'bytes': path.stat().st_size} for path in assets], indent=2))

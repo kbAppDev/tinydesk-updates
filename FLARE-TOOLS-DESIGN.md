@@ -1,24 +1,21 @@
 # Flare Tools
 
-One family of desktop tools for Flare Fireplaces. Use Flare Tools as the suite
-name and a plain function as the module name: Image Compressor, Labels,
-Stock Check, Quotes. Keep the module name in the window title and installer.
+Use **Flare Tools** for the suite name and a short functional name for each
+app. The module name belongs in the main window, Start menu and installer.
 
 | Element | Shared treatment |
 | --- | --- |
-| Brand foundation | Black `#101010` |
-| Brand red | Red `#CC2027` (working shade pending an official red hex) |
-| Primary action | Lime `#99CC00`, black text |
-| Red usage | Brand flame, current module accent, errors |
-| Content | White cards on warm pale gray |
-| Shape | Rounded cards (20 px), controls (12 px), generous spacing |
-| Type | Segoe UI with restrained sizes and hierarchy |
-| Navigation | Black suite rail, current module, updates at the bottom |
-| Main workflow | One obvious primary action; more settings expand on demand |
-| Feedback | Short status text, progress during work, clear error recovery |
-| Icons | One crisp suite mark with multi-resolution Windows icons |
-| Installer | Flare Tools / module, same suite mark, no admin requirement |
+| Suite identity | Place the Flare mark and app name together in a compact horizontal header. Keep version and update controls secondary. |
+| Palette | Use black `#101010` for identity and text, Flare red `#CC2027` for the brand mark and errors, and lime `#99CC00` for the main action. |
+| Surfaces | Group related controls on white surfaces against a soft neutral background. Use subtle borders and a consistent corner radius. |
+| Type | Use Segoe UI. Give the app a clear title, use plain section names, and keep labels next to their controls. |
+| Workflow | Give the central workspace the most room. Place actions near their inputs and keep secondary settings compact. |
+| Feedback | Pair color with text for errors and progress. Show how many files are ready and the result of the batch. |
+| Windows integration | Use the suite mark at native icon sizes. Install in the user's Flare Tools folder and group Start menu shortcuts under Flare Tools. |
 
-The exact palette and names live in flare_theme.py. Start with these when
-updating the other tools. This release applies the shared style to Image
-Compressor; it does not alter the other installed apps.
+Image Compressor puts the queue, compression settings and output destination
+in one workspace. A saved preset combines quality, output format and image
+size. The destination belongs to the workspace so choosing a different preset
+keeps the same output folder.
+
+Shared palette and typography values live in `flare_theme.py`.

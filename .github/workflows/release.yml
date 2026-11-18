@@ -22,10 +22,12 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Render suite icon
         run: python make_assets.py
-      - name: Test compression and updates
+      - name: Test compression, presets and updates
         run: python -m unittest discover -s tests -v
       - name: Verify desktop workflow
         run: python tests/ui_smoke.py
+      - name: Verify presets across app restarts
+        run: python tests/preset_workflow.py
       - name: Locate Inno Setup
         shell: pwsh
         run: |
@@ -40,6 +42,11 @@ jobs:
           $taskCheck = Start-Process -FilePath '.\dist\FlareImageCompressor\FlareImageCompressor.exe' -ArgumentList '--self-check','bundle-check.json' -WindowStyle Hidden -PassThru -Wait
           if ($taskCheck.ExitCode -ne 0) { throw 'Bundled app verification failed.' }
           Get-Content bundle-check.json
+      - name: Verify installed upgrade and saved settings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: ./.github/scripts/verify-installer-upgrade.ps1
       - name: Publish stable release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -50,5 +57,11 @@ jobs:
           if ($taskConfiguredVersion.Trim() -ne $taskVersion) { throw 'Version mismatch.' }
           gh release view "v$taskVersion" --repo "$env:GITHUB_REPOSITORY" *> $null
           if ($LASTEXITCODE -eq 0) { Write-Output 'Already released.'; exit 0 }
-          gh release create "v$taskVersion" release/* --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --title "Flare Tools - Image Compressor $taskVersion" --notes-file RELEASE-NOTES.md
+          $taskAssets = @(
+            "release/Flare-Image-Compressor-Setup-$taskVersion.exe",
+            "release/Flare-Image-Compressor-$taskVersion-portable.zip",
+            "release/Flare-Image-Compressor-$taskVersion-source.zip",
+            'release/SHA256SUMS.txt'
+          )
+          gh release create "v$taskVersion" @taskAssets --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --title "Flare Tools - Image Compressor $taskVersion" --notes-file RELEASE-NOTES.md
           if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }

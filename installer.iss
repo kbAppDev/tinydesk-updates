@@ -1,4 +1,4 @@
-#define AppVersion "2.0.1"
+#define AppVersion "2.1.0"
 [Setup]
 AppId={{FB6BBEE5-E9F0-4DD0-9F87-C15E546129B4}
 AppName=Flare Tools - Image Compressor

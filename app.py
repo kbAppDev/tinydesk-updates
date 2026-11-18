@@ -20,6 +20,7 @@ from PIL import Image, ImageOps, ImageTk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
 from engine import Options, compress, discover, human_bytes
+from presets import CUSTOM, PresetStore, Profile
 import updater
 import flare_theme as theme
 
@@ -56,7 +57,7 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
         ctk.set_appearance_mode('light')
         super().__init__()
         self.TkdndVersion = TkinterDnD._require(self)
-        self.title('TinyDesk — Image Compressor')
+        self.title(theme.APP_NAME)
         self.geometry('1060x740')
         self.minsize(960, 680)
         self.configure(fg_color=BG)
@@ -81,17 +82,16 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
         self.completed = 0
         self.close_when_idle = False
         self.mutable = []
-        self.preset = tk.StringVar(value=self.settings.get('preset', 'Balanced'))
-        self.format = tk.StringVar(value=self.settings.get('format', 'Keep format'))
-        self.resize = tk.StringVar(value=self.settings.get('resize', 'Original size'))
-        if self.preset.get() not in ('Balanced', 'Best quality', 'Smallest'):
-            self.preset.set('Balanced')
-        if self.format.get() not in ('Keep format', 'WebP'):
-            self.format.set('Keep format')
-        if self.resize.get() not in ('Original size', '2560 px', '1920 px', '1280 px'):
-            self.resize.set('Original size')
+        self.profiles = PresetStore(DATA / 'presets.json', self.settings)
+        profile = self.profiles.current
+        self.profile_var = tk.StringVar(value=self.profiles.selected)
+        self.preset = tk.StringVar(value=profile.quality)
+        self.format = tk.StringVar(value=profile.format)
+        self.resize = tk.StringVar(value=profile.resize)
         self.output = Path(self.settings.get('output', str(desktop() / 'Flare Compressed Images')))
         self.build_ui()
+        self.refresh_profiles()
+        self.set_controls(True)
         self.drop_target_register(DND_FILES)
         self.dnd_bind('<<Drop>>', self.on_drop)
         self.bind('<Control-o>', lambda _: self.add_images())
@@ -126,15 +126,57 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
         text = str(self.output)
         self.output_label.configure(text=text if len(text) < 58 else '…' + text[-55:])
 
+    def current_options(self):
+        return Profile(self.preset.get(), self.format.get(), self.resize.get())
+
+    def refresh_profiles(self):
+        profile = self.profiles.current
+        self.preset.set(profile.quality)
+        self.format.set(profile.format)
+        self.resize.set(profile.resize)
+        self.profile_var.set(self.profiles.selected)
+        names = list(self.profiles.names)
+        if self.profiles.selected == CUSTOM and CUSTOM not in names:
+            names.append(CUSTOM)
+        self.profile_picker.configure(values=names)
+        quality_help = {
+            'Best quality': 'Keeps more detail in photos. Files may be larger.',
+            'Balanced': 'Balances photo quality and file size for everyday use.',
+            'Smallest': 'Prioritizes smaller files. Fine detail and colors may change.',
+        }
+        self.hint.configure(text=quality_help[profile.quality])
+
     def options_changed(self):
-        hints = {'Balanced': 'A smaller file, with great quality. PNG colors stay unchanged.',
-                 'Best quality': 'Keeps more fine detail. Files will be a little larger.',
-                 'Smallest': 'The smallest files. PNG colors may look less detailed.'}
-        self.hint.configure(text=hints[self.preset.get()])
-        self.save_settings()
+        try:
+            current = self.current_options()
+            if current != self.profiles.current:
+                self.profiles.edit(current)
+        except (OSError, ValueError) as error:
+            messagebox.showerror('Could not save settings', str(error), parent=self)
+        self.refresh_profiles()
+
+    def select_profile(self, name):
+        try:
+            if name != self.profiles.selected:
+                self.profiles.select(name)
+        except (OSError, ValueError) as error:
+            messagebox.showerror('Could not select preset', str(error), parent=self)
+        self.refresh_profiles()
+
+    def save_profile(self, name, overwrite=False):
+        self.profiles.save(name, self.current_options(), overwrite=overwrite)
+        self.refresh_profiles()
+
+    def rename_profile(self, old, new):
+        self.profiles.rename(old, new)
+        self.refresh_profiles()
+
+    def delete_profile(self, name):
+        self.profiles.delete(name)
+        self.refresh_profiles()
 
     def save_settings(self):
-        self.settings.update(preset=self.preset.get(), format=self.format.get(), resize=self.resize.get(), output=str(self.output))
+        self.settings['output'] = str(self.output)
         try:
             DATA.mkdir(parents=True, exist_ok=True)
             temporary = DATA / 'settings.tmp'
@@ -194,9 +236,15 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
         for widget in self.mutable:
             state = 'readonly' if isinstance(widget, ttk.Combobox) and enabled else ('normal' if enabled else 'disabled')
             widget.configure(state=state)
-        self.compress_button.configure(state='normal' if enabled else 'disabled')
+        self.set_compress_enabled(enabled and bool(self.files))
+
+    def set_compress_enabled(self, enabled):
+        self.compress_button.configure(state='normal' if enabled else 'disabled',
+                                       fg_color=theme.LIME if enabled else theme.BORDER,
+                                       text_color_disabled='#62645D')
 
     def refresh_stats(self):
+        self.thumbnails.refresh()
         self.stat_labels[0].configure(text=f'{len(self.files):,}')
         self.stat_labels[1].configure(text=human_bytes(self.total_before))
         saved = max(0, self.run_before - self.run_after)
@@ -208,13 +256,19 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
         else:
             self.queue_footer.grid_remove()
             self.empty.place(x=0, y=0, relwidth=1, relheight=1)
+            if not (self.busy or self.importing or self.updating):
+                self.set_compress_enabled(False)
 
     def remove_selected(self):
         if self.busy or self.importing or self.updating:
             return
         for key in self.tree.selection():
             self.total_before -= self.files.pop(key, 0)
-            self.results.pop(key, None)
+            result = self.results.pop(key, None)
+            if result and result.output:
+                self.run_ok -= 1
+                self.run_before -= result.before
+                self.run_after -= result.after
             self.tree.delete(key)
         self.refresh_stats()
 
@@ -226,7 +280,7 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
         self.results.clear()
         self.total_before = self.run_before = self.run_after = self.run_ok = 0
         self.progress['value'] = 0
-        self.progress.grid()
+        self.progress.grid_remove()
         self.refresh_stats()
         self.status.configure(text='Queue cleared. Saved images are still in your output folder.')
 
@@ -298,7 +352,8 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
         self.run_before = self.run_after = self.run_ok = self.run_errors = self.completed = 0
         self.results.clear()
         self.set_controls(False)
-        self.compress_button.configure(text='Cancel batch', command=self.cancel_batch, state='normal')
+        self.compress_button.configure(text='Cancel batch', command=self.cancel_batch, state='normal',
+                                       fg_color=theme.LIME)
         self.progress['value'] = 0
         self.progress.grid()
         for key in self.files:
@@ -366,6 +421,8 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
             return
         self.updating = True
         self.set_controls(False)
+        self.progress['value'] = 0
+        self.progress.grid()
         self.update_button.configure(state='disabled', text='Downloading…')
         self.status.configure(text='Downloading update and verifying its checksum…')
         def work():
@@ -415,6 +472,7 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
                     self.refresh_stats()
                 elif kind == 'done':
                     self.busy = False
+                    self.progress.grid_remove()
                     self.set_controls(True)
                     self.compress_button.configure(text='Compress images', command=self.start_batch)
                     elapsed = time.monotonic() - self.start_time
@@ -459,6 +517,7 @@ class TinyDeskApp(ctk.CTk, TkinterDnD.DnDWrapper):
                         self.events.put(('install_error', str(error)))
                 elif kind == 'install_error':
                     self.updating = False
+                    self.progress.grid_remove()
                     self.set_controls(True)
                     self.update_button.configure(state='normal', text='Install update')
                     self.status.configure(text='Update could not be installed. Your current version is still available.')

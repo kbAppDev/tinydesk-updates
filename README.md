@@ -1,78 +1,105 @@
-# Flare Tools - Image Compressor
+# Flare Tools · Image Compressor
 
-A simple Windows desktop tool from Flare Fireplaces, using black, red and lime
-green, rounded controls, and the shared Flare Tools identity.
+Compress a folder of images on your Windows PC and keep the originals.
+Run **Flare-Image-Compressor-Setup-2.1.0.exe** to install or upgrade.
+Open **Image Compressor** from the **Flare Tools** Start menu folder.
+Installation works with a standard Windows account and includes Python.
 
-Run **Flare-Image-Compressor-Setup-2.0.1.exe**. It installs without admin rights,
-adds Image Compressor to the Flare Tools Start menu folder, and includes an
-optional desktop shortcut and Windows uninstaller. Python is included.
+![Image Compressor showing a completed batch and a saved preset](docs/image-compressor.png)
 
-1. Drop images or folders into the app, or choose **Add images** / **Add folder**.
-2. Leave **Balanced** selected for everyday compression.
-3. Click **Compress images**, then **Open folder** to find the copies.
+## Compress a batch
 
-Originals are never replaced. Matching names get numbered suffixes. Settings
-are remembered. The default output folder is **Desktop / Flare Compressed
-Images**, including redirected OneDrive desktops. More options holds WebP
-conversion and optional resizing.
+1. Drop images or a folder into the queue, or choose **Add images…** or **Add folder…**.
+2. Choose a preset. **Everyday** keeps original dimensions and format for JPEG, PNG and WebP.
+3. Check **Save copies to**, then choose **Compress images**. Choose **Open folder** to see the copies.
 
-| Preset | JPEG / WebP quality | PNG |
+The default destination is **Flare Compressed Images** on your desktop.
+The app remembers a different destination when you choose one. Files with
+matching names receive numbered copies.
+
+## Save settings for different images
+
+| Starting preset | Quality | Output | Maximum long edge |
+| --- | --- | --- | --- |
+| Everyday | Balanced | Keep format | Original size |
+| Product photos | Best quality | Keep format | Original size |
+| Website images | Balanced | WebP | 1920 px |
+| Email attachments | Smallest | Keep format | 1280 px |
+
+Choose the closest preset and open **Edit settings**. Adjust the quality,
+output format or size, then choose **Save as…** and enter a name. For example,
+save **Dealer portal** for a WebP export with a 1280 px limit. Select that
+name under **Preset** to apply all three settings to another batch.
+Choose **Manage…** to rename or delete a preset, or choose **Use current
+settings** to replace its saved values with the settings on screen.
+
+The app restores the last selection or custom settings when you reopen it.
+Your output folder applies across presets. Upgrades from 2.0.1 also pick up
+your previous quality, format and size choices.
+
+## Image handling
+
+| Quality | JPEG / WebP quality | PNG at original size |
 | --- | --- | --- |
-| Balanced | 82 | Keeps every pixel |
-| Best quality | 92 | Keeps every pixel |
-| Smallest | 68 | Up to 256 colors; exact transparency |
+| Balanced | 82 | Preserves pixel values |
+| Best quality | 92 | Preserves pixel values |
+| Smallest | 68 | May reduce color detail, preserves transparency |
 
-JPEG and WebP compression is lossy. Smallest may visibly reduce PNG color
-detail. Same-format compression at original size never makes the copy larger:
-already optimized files are copied unchanged when needed. Color profiles are
-retained. Newly encoded images omit EXIF and ancillary metadata; unchanged
-copies retain their original metadata. EXIF orientation is applied to newly
-encoded images, so rotated images may swap width and height.
+JPEG and WebP encoding is lossy. When keeping both format and size, the app
+copies the original file if re-encoding would make it larger. Re-encoded
+images retain the color profile and apply EXIF orientation, then omit EXIF
+and ancillary metadata. Exact copies retain their original metadata.
 
-JPG, PNG and WebP keep their format. BMP and single-page TIFF become PNG.
-Animated, multipage and over-50-megapixel images are skipped with an explanation.
-Resizing keeps proportions and never upscales. Queue limit: 10,000 images.
-Two background workers keep the interface responsive. Cancel stops remaining
-work and keeps completed copies. Select a row for error details. Double-click
-to open its completed copy or preview an unprocessed image. Remove and Clear
-only change the queue.
+With **Keep format**, BMP and single-page TIFF become PNG. Animated,
+multipage and over-50-megapixel images are skipped with a reason. Resizing
+keeps proportions and never enlarges an image.
 
-Shortcuts: Ctrl+O add images; Ctrl+Shift+O add folder; Delete remove selected;
-Ctrl+Enter compress; Esc cancel batch.
+Add up to 10,000 images. The queue loads thumbnails as rows come into view.
+Two background workers process the batch. Canceling
+stops pending work and keeps completed copies. Select a row for details.
+Double-click to preview an unprocessed image or open a completed copy.
+Removing rows or clearing the queue leaves files on disk.
 
-## Privacy and updates
+| Keyboard shortcut | Action |
+| --- | --- |
+| Ctrl+O | Add images |
+| Ctrl+Shift+O | Add a folder |
+| Delete | Remove selected images from the queue |
+| Ctrl+Enter | Compress the queue |
+| Esc | Cancel the batch |
 
-Images are processed on your PC. No account, upload or internet connection is
-needed for compression. Nothing starts automatically with Windows.
-The app checks GitHub for updates daily when opened, or use Check for updates.
-Downloaded installers must match their published SHA-256 checksum before they
-can run. Installation requires a click and preserves settings.
-Preferences and logs: `%LOCALAPPDATA%\Flare Tools\Image Compressor`.
-Uninstalling leaves images and preferences intact. This release is unsigned;
-Windows may show its standard publisher warning.
+## Updates and local data
 
-## Backups and builds
+Compression works offline. The app checks GitHub for updates daily when
+opened. You can also choose **Check for updates**. The app verifies the
+downloaded installer's SHA-256 checksum before launching it.
+This release is unsigned, so Windows may show a publisher prompt.
 
-Extract the portable ZIP and run FlareImageCompressor.exe. Keep its _internal
-folder beside it. The source ZIP is a rebuildable backup, including the suite
-icon, palette and design notes. No user images, credentials or preferences.
+Preferences, presets and logs are in
+`%LOCALAPPDATA%\Flare Tools\Image Compressor`. Uninstalling leaves images
+and preferences in place.
 
-Use Python 3.13 x64 and Inno Setup 6. Install requirements, then run:
+## Portable edition and source
 
-```
+Extract the portable ZIP and run **FlareImageCompressor.exe**. Keep the
+accompanying **_internal** folder beside it. The portable and installed
+editions use the same preferences for your Windows account.
+
+The source ZIP includes the application, tests, suite assets, design notes
+and build files. Use Python 3.13 x64 and Inno Setup 6 to rebuild from source.
+
+```powershell
+python -m pip install -r requirements.txt
 python make_assets.py
 python -m unittest discover -s tests -v
 python tests/ui_smoke.py
+python tests/preset_workflow.py
 python build_release.py
 ```
 
-The release directory contains the installer, portable ZIP, source ZIP and
-SHA256SUMS.txt. GitHub Actions can build, test and publish these artifacts.
-For future versions, update VERSION in updater.py and AppVersion in
-installer.iss together, then change release-request.txt to request that version.
-Stable release tags use v2.0.1 format. The existing internal update repository,
-kbAppDev/tinydesk-updates, retains its URL for continuity; the product is
-branded Flare Tools throughout.
-
-The shared design lives in flare_theme.py and FLARE-TOOLS-DESIGN.md. This
-release does not modify the other installed tools.
+The `release` folder contains the installer, portable ZIP, source ZIP and
+`SHA256SUMS.txt`. To release a new version, update `updater.py`,
+`installer.iss`, `version-info.txt` and the release notes. Set
+`release-request.txt` to that version to request a build on the main branch.
+GitHub Actions tests, builds and publishes a stable tag such as `v2.1.0` to
+`kbAppDev/tinydesk-updates`, the update channel used by existing installs.
