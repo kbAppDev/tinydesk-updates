@@ -1,4 +1,4 @@
-"""Shared Flare Tools palette and product identity."""
+"""Shared Flare Tools colors, type and spacing. Keep modules consistent."""
 BLACK = '#101010'
 RED = '#CC2027'
 LIME = '#99CC00'
