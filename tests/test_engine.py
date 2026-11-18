@@ -133,7 +133,7 @@ class EngineTests(unittest.TestCase):
         first = self.make('folder/a.png')
         second = self.make('folder/nested/b.jpg')
         (first.parent / 'text.txt').write_text('skip')
-        self.assertEqual(set(discover([first.parent])), {first, second})
+        self.assertEqual(set(discover([first.parent])), {first.resolve(), second.resolve()})
 
 
 if __name__ == '__main__':
