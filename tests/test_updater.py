@@ -9,7 +9,7 @@ import updater
 
 
 class UpdateTests(unittest.TestCase):
-    def fixture(self, version='2.0.1', checksum=True):
+    def fixture(self, version='2.0.2', checksum=True):
         prefix = f'https://github.com/{updater.REPOSITORY}/releases/download/v{version}/'
         assets = [{'name': f'Flare-Image-Compressor-Setup-{version}.exe', 'browser_download_url': prefix + f'Flare-Image-Compressor-Setup-{version}.exe'}]
         if checksum:
@@ -21,9 +21,9 @@ class UpdateTests(unittest.TestCase):
             self.assertIsNone(updater.check())
 
     def test_new_version_with_hash(self):
-        with patch.object(updater, 'read_url', side_effect=[self.fixture(), b'a' * 64 + b'  Flare-Image-Compressor-Setup-2.0.1.exe\n']):
+        with patch.object(updater, 'read_url', side_effect=[self.fixture(), b'a' * 64 + b'  Flare-Image-Compressor-Setup-2.0.2.exe\n']):
             info = updater.check()
-            self.assertEqual(info['version'], '2.0.1')
+            self.assertEqual(info['version'], '2.0.2')
             self.assertEqual(info['sha256'], 'a' * 64)
 
     def test_missing_hash_refused(self):
