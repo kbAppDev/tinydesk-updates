@@ -12,5 +12,5 @@ a = Analysis(['app.py'], pathex=[], binaries=[], datas=datas, hiddenimports=['PI
 pyz = PYZ(a.pure)
 exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name='FlareImageCompressor', debug=False,
           bootloader_ignore_signals=False, strip=False, upx=False, console=False,
-          icon=['assets/FlareTools.ico'])
+          icon=['assets/FlareTools.ico'], version='version-info.txt')
 coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name='FlareImageCompressor')
