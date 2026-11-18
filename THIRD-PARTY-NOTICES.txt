@@ -1,0 +1,9 @@
+TinyDesk uses Python, Tcl/Tk, Pillow, and tkinterdnd2/tkDnD.
+Their license texts and bundled-library notices are included under _internal/licenses.
+No external compression executables or web services are used for image processing.
+
+Python: https://www.python.org/psf/license/ (PSF License)
+Pillow: https://github.com/python-pillow/Pillow (HPND; bundled codec licenses apply)
+tkinterdnd2: https://github.com/Eliav2/tkinterdnd2 (MIT)
+tkDnD: https://github.com/petasis/tkdnd (BSD)
+PyInstaller: https://pyinstaller.org (GPL with bootloader exception)
