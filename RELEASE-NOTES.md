@@ -1,4 +1,4 @@
-Flare Tools - Image Compressor 2.0.0
+Flare Tools - Image Compressor 2.0.1
 
 - Unified black, red and lime green (#99CC00) Flare Tools branding.
 - Rounded controls, a simple main view and optional advanced settings.
