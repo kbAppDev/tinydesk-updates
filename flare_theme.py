@@ -1,0 +1,19 @@
+"""Shared Flare Tools palette and product identity."""
+BLACK = '#101010'
+RED = '#CC2027'
+LIME = '#99CC00'
+LIME_HOVER = '#86B300'
+PAGE = '#F5F5F4'
+SURFACE = '#FFFFFF'
+INK = '#202020'
+MUTED = '#707070'
+BORDER = '#E7E7E5'
+SOFT_LIME = '#F3F8E6'
+SOFT_RED = '#FFF0F0'
+RADIUS_CARD = 20
+RADIUS_CONTROL = 12
+FONT = 'Segoe UI'
+SUITE = 'Flare Tools'
+APP = 'Image Compressor'
+APP_NAME = 'Flare Tools - Image Compressor'
+APP_ID = 'FlareTools.ImageCompressor'
